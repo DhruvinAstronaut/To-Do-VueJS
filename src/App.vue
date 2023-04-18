@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onBeforeMount, } from 'vue'
 
 const todos = ref([])
 const name = ref('')
@@ -33,6 +33,7 @@ const addTodo = () => {
 		editable: false,
 		createdAt: new Date().getTime()
 	})
+	input_content.value = ""
 }
 
 const removeTodo = (todo) => {
@@ -43,6 +44,7 @@ onMounted(() => {
 	name.value = localStorage.getItem('name') || ''
 	todos.value = JSON.parse(localStorage.getItem('todos')) || []
 })
+
 </script>
 
 <template>
