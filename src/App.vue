@@ -1,13 +1,16 @@
 <script setup>
-import { ref, onMounted, computed, watch, onBeforeMount, } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
 const todos = ref([])
 const name = ref('')
+const errorMessage = ref('');
+// const complate_task = ref(0);
+const pendding_task = ref(0);
 
 const input_content = ref('')
 const input_category = ref(null)
 
-const todos_asc = computed(() => todos.value.sort((a,b) =>{
+const todos_asc = computed(() => todos.value.sort((a, b) => {
 	return a.createdAt - b.createdAt
 }))
 
@@ -17,12 +20,20 @@ watch(name, (newVal) => {
 
 watch(todos, (newVal) => {
 	localStorage.setItem('todos', JSON.stringify(newVal))
+	const pt = JSON.parse(localStorage.getItem('todos')) || []
+	if(pt.length > 0){
+		pendding_task.value = pt.filter(x => x.done === false).length
+	}
 }, {
 	deep: true
 })
 
 const addTodo = () => {
-	if (input_content.value.trim() === '' || input_category.value === null) {
+	if (input_content.value.trim() === '') {
+		errorMessage.value = "Please add the task context" 
+		return
+	}else if(input_category.value === null){
+		errorMessage.value = "Please select the category"
 		return
 	}
 
@@ -33,7 +44,9 @@ const addTodo = () => {
 		editable: false,
 		createdAt: new Date().getTime()
 	})
-	input_content.value = ""
+	input_content.value = "";
+	input_category.value = null;
+	errorMessage.value = ""
 }
 
 const removeTodo = (todo) => {
@@ -43,13 +56,16 @@ const removeTodo = (todo) => {
 onMounted(() => {
 	name.value = localStorage.getItem('name') || ''
 	todos.value = JSON.parse(localStorage.getItem('todos')) || []
+	
 })
+
+
 
 </script>
 
 <template>
 	<main class="app">
-		
+
 		<section class="greeting">
 			<h2 class="title">
 				What's up, <input type="text" id="name" placeholder="Name here" v-model="name">
@@ -61,56 +77,46 @@ onMounted(() => {
 
 			<form id="new-todo-form" @submit.prevent="addTodo">
 				<h4>What's on your todo list?</h4>
-				<input 
-					type="text" 
-					name="content" 
-					id="content" 
-					placeholder="e.g. make a video"
-					v-model="input_content" />
-				
+				<input type="text" name="content" id="content" placeholder="e.g. make a video" v-model="input_content" />
+
 				<h4>Pick a category</h4>
 				<div class="options">
 
 					<label>
-						<input 
-							type="radio" 
-							name="category" 
-							id="category1" 
-							value="business"
-							v-model="input_category" />
+						<input type="radio" name="category" id="category1" value="business" v-model="input_category" />
 						<span class="bubble business"></span>
 						<div>Business</div>
 					</label>
 
 					<label>
-						<input 
-							type="radio" 
-							name="category" 
-							id="category2" 
-							value="personal"
-							v-model="input_category" />
+						<input type="radio" name="category" id="category2" value="personal" v-model="input_category" />
 						<span class="bubble personal"></span>
 						<div>Personal</div>
 					</label>
 
 				</div>
+				<div style="color: red; margin-bottom: 10px;">
 
+					<span>{{ errorMessage }}</span>
+				</div>
 				<input type="submit" value="Add todo" />
 			</form>
 		</section>
 
 		<section class="todo-list">
+
 			<h3>TODO LIST</h3>
+			<!-- <h4>COMPLETE TASK  {{complate_task}}</h4> -->
+			<h4>PENDING TASK {{pendding_task}}</h4>
 			<div class="list" id="todo-list">
 
 				<div v-for="todo in todos_asc" :class="`todo-item ${todo.done && 'done'}`">
 					<label>
 						<input type="checkbox" v-model="todo.done" />
-						<span :class="`bubble ${
-							todo.category == 'business' 
-								? 'business' 
+						<span :class="`bubble ${todo.category == 'business'
+								? 'business'
 								: 'personal'
-						}`"></span>
+							}`"></span>
 					</label>
 
 					<div class="todo-content">
