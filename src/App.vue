@@ -23,6 +23,8 @@ watch(todos, (newVal) => {
 	const pt = JSON.parse(localStorage.getItem('todos')) || []
 	if(pt.length > 0){
 		pendding_task.value = pt.filter(x => x.done === false).length
+	}else if(todos.value.length ===0){
+		pendding_task.value = 0
 	}
 }, {
 	deep: true
